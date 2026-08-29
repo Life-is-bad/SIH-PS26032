@@ -21,7 +21,7 @@ def create_user(role: str, full_name: str, phone_number: str, password_hash: str
 
 def get_user_by_phone(phone_number: str):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)  # dictionary=True gives {column: value} instead of tuples
+    cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
             "SELECT * FROM users WHERE phone_number = %s",

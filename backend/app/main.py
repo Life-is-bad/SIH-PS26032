@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from app.database import test_connection
+from app.routes import auth
 
 app = FastAPI(title="Farmer Slot Booking & Queue Management — PS 26032")
+
+app.include_router(auth.router)
 
 @app.get("/")
 def health_check():
