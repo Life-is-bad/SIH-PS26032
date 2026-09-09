@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from app.database import test_connection
 from app.routes import auth
+from app.auth_utils import get_current_user, require_role
 
 app = FastAPI(title="Farmer Slot Booking & Queue Management — PS 26032")
 
@@ -16,3 +17,11 @@ def db_check():
     if connected:
         return {"database": "connected"}
     return {"database": "error", "detail": error}
+
+@app.get("/whoami")
+def whoami(current_user: dict = Depends(get_current_user)):
+    return current_user
+
+@app.get("/officer-only-test")
+def officer_only(current_user: dict = Depends(require_role("officer"))):
+    return {"message": "You're an officer, access granted"}
