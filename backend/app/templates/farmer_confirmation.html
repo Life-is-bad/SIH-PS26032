@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Slot booked — Agri-Queue{% endblock %}
+{% block content %}
+<div class="auth-wrap" style="text-align:center;">
+    <h1>Slot booked</h1>
+    <p class="sub">{{ booking.counter_name }} &middot; {{ booking.slot_date }}</p>
+
+    <div
+        style="margin:24px auto; display:inline-block; background:var(--paper-raised); border:1px solid var(--line); border-radius:14px; padding:20px;">
+        <img src="/farmer/booking/{{ booking.booking_id }}/qr.png" alt="Booking QR code"
+            style="display:block; width:180px; height:180px;">
+    </div>
+
+    <div class="booking-row" style="display:block; text-align:left;">
+        <div class="mono" style="font-size:20px; margin-bottom:10px;">Token {{ "%03d"|format(booking.booking_id) }}
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line);">
+            <span class="sub">Slot</span><span class="mono">{{ booking.start_time }} - {{ booking.end_time }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line);">
+            <span class="sub">Produce</span><span>{{ booking.produce_type or "—" }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0;">
+            <span class="sub">Center</span><span>{{ booking.location_desc or booking.counter_name }}</span>
+        </div>
+    </div>
+
+    <a href="/farmer" class="btn" style="display:block; margin-top:20px; text-decoration:none;">Back to bookings</a>
+</div>
+{% endblock %}
