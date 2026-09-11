@@ -2,16 +2,18 @@
 Farmer Slot Booking & Queue Management - PS 26032
 
 
-0.0.1 -> feat: Added initial MYSQL Schema for slot booking system
+0.1.0 -> feat: Added initial MYSQL Schema for slot booking system
 
-0.0.2 -> feat: add FastAPI backend skeleton with MySQL connection
+0.2.0 -> feat: add FastAPI backend skeleton with MySQL connection
 
-0.0.3 -> feat: add JWT auth with signup/login endpoints
+0.3.0 -> feat: add JWT auth with signup/login endpoints
 
-0.0.4 -> feat: added Role Based Access Control (RBAC)
+0.4.0 -> feat: added Role Based Access Control (RBAC)
 
-0.0.5 -> feat: added slots and bookings endpoints with concurrency-safe booking
+0.5.0 -> feat: added slots and bookings endpoints with concurrency-safe booking
 
-0.0.6 -> feat: added queue check-in and live status tracking
+0.6.0 -> feat: added queue check-in and live status tracking
 
 1.0.0 -> feat: added frontend
+
+1.1.0 -> feat: added QR Code generation and check-in window for officer
