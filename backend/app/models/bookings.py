@@ -1,3 +1,4 @@
+import secrets
 from app.database import get_connection
 from mysql.connector import Error
 
@@ -5,9 +6,7 @@ from mysql.connector import Error
 def create_booking(farmer_id: int, slot_id: int, produce_type: str | None):
     """
     Locks the slot row before checking capacity, so two farmers booking
-    the same last seat at the same instant can't both succeed. This is
-    exactly the race condition your schema notes warned about — the
-    trigger alone does NOT prevent it, this transaction does.
+    the same last seat at the same instant can't both succeed.
     """
     conn = get_connection()
     try:
@@ -28,13 +27,15 @@ def create_booking(farmer_id: int, slot_id: int, produce_type: str | None):
             conn.rollback()
             return {"error": "full", "detail": "This slot is fully booked"}
 
+        token = secrets.token_urlsafe(24)
+
         try:
             cursor.execute(
                 """
-                INSERT INTO bookings (farmer_id, slot_id, produce_type)
-                VALUES (%s, %s, %s)
+                INSERT INTO bookings (farmer_id, slot_id, produce_type, qr_token)
+                VALUES (%s, %s, %s, %s)
                 """,
-                (farmer_id, slot_id, produce_type),
+                (farmer_id, slot_id, produce_type, token),
             )
         except Error as e:
             conn.rollback()
@@ -57,13 +58,7 @@ def get_farmer_bookings(farmer_id: int):
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            """
-            SELECT b.*, qs.check_in_status AS queue_status
-            FROM bookings b
-            LEFT JOIN queue_status qs ON qs.booking_id = b.booking_id
-            WHERE b.farmer_id = %s
-            ORDER BY b.booking_time DESC
-            """,
+            "SELECT * FROM bookings WHERE farmer_id = %s ORDER BY booking_time DESC",
             (farmer_id,),
         )
         return cursor.fetchall()
@@ -99,6 +94,7 @@ def cancel_booking(booking_id: int, farmer_id: int):
         cursor.close()
         conn.close()
 
+
 def get_bookings_for_counter(counter_id: int):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -113,7 +109,6 @@ def get_bookings_for_counter(counter_id: int):
             JOIN users u ON u.user_id = b.farmer_id
             LEFT JOIN queue_status qs ON qs.booking_id = b.booking_id
             WHERE s.counter_id = %s
-              AND s.slot_date >= CURDATE()
               AND b.status = 'booked'
               AND qs.queue_id IS NULL
             ORDER BY s.start_time
@@ -121,6 +116,52 @@ def get_bookings_for_counter(counter_id: int):
             (counter_id,),
         )
         return cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_booking_details(booking_id: int, farmer_id: int):
+    """Full booking + slot + counter info for the confirmation page."""
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """
+            SELECT b.booking_id, b.produce_type, b.status, b.qr_token,
+                   s.slot_date, s.start_time, s.end_time,
+                   c.counter_id, c.counter_name, c.location_desc
+            FROM bookings b
+            JOIN slots s ON s.slot_id = b.slot_id
+            JOIN counters c ON c.counter_id = s.counter_id
+            WHERE b.booking_id = %s AND b.farmer_id = %s
+            """,
+            (booking_id, farmer_id),
+        )
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_booking_by_token(token: str):
+    """Used by the officer's scan endpoint to look up who this QR belongs to."""
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """
+            SELECT b.booking_id, b.produce_type, b.status,
+                   u.full_name AS farmer_name,
+                   s.start_time, s.end_time, s.counter_id
+            FROM bookings b
+            JOIN users u ON u.user_id = b.farmer_id
+            JOIN slots s ON s.slot_id = b.slot_id
+            WHERE b.qr_token = %s
+            """,
+            (token,),
+        )
+        return cursor.fetchone()
     finally:
         cursor.close()
         conn.close()

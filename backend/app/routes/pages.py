@@ -1,3 +1,6 @@
+import qrcode
+import io
+from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, HTMLResponse
@@ -16,6 +19,10 @@ from app.models.counters import list_counters
 from app.models.bookings import get_bookings_for_counter
 from app.models.queue import check_in_booking
 from app.models.slots import list_upcoming_slots, delete_slot
+from app.models.bookings import (
+    create_booking, get_farmer_bookings, cancel_booking,
+    get_bookings_for_counter, get_booking_details, get_booking_by_token,
+)
 
 router = APIRouter(tags=["pages"])
 templates = Jinja2Templates(directory="app/templates")
@@ -96,16 +103,21 @@ def farmer_page(request: Request):
     )
 
 
-@router.post("/farmer/book/{slot_id}", response_class=HTMLResponse)
+@router.post("/farmer/book/{slot_id}")
 def farmer_book(request: Request, slot_id: int, produce_type: str = Form(None)):
     user = get_current_user_from_cookie(request)
     if user is None or user["role"] != "farmer":
         return RedirectResponse("/login")
-    create_booking(int(user["sub"]), slot_id, produce_type=produce_type or None)
-    bookings = get_farmer_bookings(int(user["sub"]))
-    return templates.TemplateResponse(
-        request, "partials/booking_list.html", {"bookings": bookings}
-    )
+    result = create_booking(int(user["sub"]), slot_id, produce_type=produce_type or None)
+    if "error" in result:
+        slots = list_upcoming_slots()
+        bookings = get_farmer_bookings(int(user["sub"]))
+        return templates.TemplateResponse(
+            request, "farmer.html",
+            {"user": user, "slots": slots, "bookings": bookings, "error": result["detail"]},
+        )
+    booking_id = result["booking"]["booking_id"]
+    return RedirectResponse(f"/farmer/booking/{booking_id}/confirmation", status_code=303)
 
 
 @router.delete("/farmer/cancel/{booking_id}", response_class=HTMLResponse)
@@ -117,6 +129,59 @@ def farmer_cancel(request: Request, booking_id: int):
     bookings = get_farmer_bookings(int(user["sub"]))
     return templates.TemplateResponse(
         request, "partials/booking_list.html", {"bookings": bookings}
+    )
+
+
+@router.get("/farmer/booking/{booking_id}/confirmation", response_class=HTMLResponse)
+def farmer_confirmation(request: Request, booking_id: int):
+    user = get_current_user_from_cookie(request)
+    if user is None or user["role"] != "farmer":
+        return RedirectResponse("/login")
+    booking = get_booking_details(booking_id, int(user["sub"]))
+    if booking is None:
+        return RedirectResponse("/farmer")
+    return templates.TemplateResponse(
+        request, "farmer_confirmation.html", {"user": user, "booking": booking},
+    )
+
+
+@router.get("/farmer/booking/{booking_id}/qr.png")
+def farmer_booking_qr(request: Request, booking_id: int):
+    user = get_current_user_from_cookie(request)
+    if user is None or user["role"] != "farmer":
+        return RedirectResponse("/login")
+    booking = get_booking_details(booking_id, int(user["sub"]))
+    if booking is None or not booking["qr_token"]:
+        return RedirectResponse("/farmer")
+    scan_url = str(request.base_url) + f"officer/scan/{booking['qr_token']}"
+    img = qrcode.make(scan_url)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return StreamingResponse(buf, media_type="image/png")
+
+
+@router.get("/officer/scan/{token}", response_class=HTMLResponse)
+def officer_scan(request: Request, token: str):
+    user = get_current_user_from_cookie(request)
+    if user is None or user["role"] != "officer":
+        return RedirectResponse("/login")
+    booking = get_booking_by_token(token)
+    if booking is None:
+        return templates.TemplateResponse(
+            request, "officer_scan_result.html",
+            {"user": user, "result": "invalid", "booking": None},
+        )
+    if booking["status"] != "booked":
+        return templates.TemplateResponse(
+            request, "officer_scan_result.html",
+            {"user": user, "result": "invalid_state", "booking": booking},
+        )
+    outcome = check_in_booking(booking["booking_id"], int(user["sub"]))
+    result = "duplicate" if "error" in outcome and outcome["error"] == "duplicate" else "checked_in"
+    return templates.TemplateResponse(
+        request, "officer_scan_result.html",
+        {"user": user, "result": result, "booking": booking},
     )
 
 
@@ -171,7 +236,7 @@ def officer_checkin(request: Request, booking_id: int, counter_id: int = 1):
         return RedirectResponse("/login")
     check_in_booking(booking_id, int(user["sub"]))
     queue = get_live_queue(counter_id)
-    pending = get_bookings_for_counter(counter_id, date.today())
+    pending = get_bookings_for_counter(counter_id)
     return templates.TemplateResponse(
         request, "partials/officer_panels.html",
         {"pending": pending, "queue": queue, "counter_id": counter_id},

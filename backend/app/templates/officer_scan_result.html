@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Scan result — Agri-Queue{% endblock %}
+{% block content %}
+<div class="auth-wrap" style="text-align:center;">
+    {% if result == "checked_in" %}
+    <h1>Checked in</h1>
+    <p class="sub">{{ booking.farmer_name }} &middot; {{ booking.produce_type or "—" }} &middot; {{ booking.start_time
+        }}</p>
+    {% elif result == "duplicate" %}
+    <h1>Already checked in</h1>
+    <p class="sub">{{ booking.farmer_name }} was already checked in earlier.</p>
+    {% elif result == "invalid_state" %}
+    <h1>Can't check in</h1>
+    <p class="sub">This booking is {{ booking.status }}, not active.</p>
+    {% else %}
+    <h1>Invalid QR code</h1>
+    <p class="sub">No booking matches this code.</p>
+    {% endif %}
+    <a href="/officer?counter_id={{ booking.counter_id if booking else 1 }}" class="btn"
+        style="display:block; margin-top:20px; text-decoration:none;">Back to queue</a>
+</div>
+{% endblock %}

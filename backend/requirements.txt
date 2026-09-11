@@ -28,3 +28,4 @@ watchfiles==1.2.0
 websockets==17.1
 jinja2
 python-multipart
+qrcode[pil]
