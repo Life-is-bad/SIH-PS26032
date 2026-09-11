@@ -3,12 +3,14 @@ from app.database import test_connection
 from app.routes import auth
 from app.auth_utils import get_current_user, require_role
 from app.routes import slots, bookings
+from app.routes import slots, bookings, queue
 
 app = FastAPI(title="Farmer Slot Booking & Queue Management — PS 26032")
 
 app.include_router(auth.router)
 app.include_router(slots.router)
 app.include_router(bookings.router)
+app.include_router(queue.router)
 
 @app.get("/")
 def health_check():
