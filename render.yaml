@@ -1,0 +1,19 @@
+services:
+  - type: pserv
+    name: mysql-db
+    env: docker
+    repo: https://github.com/render-examples/mysql
+    branch: master
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 1
+    envVars:
+      - key: MYSQL_DATABASE
+        value: sih_ps26032
+      - key: MYSQL_USER
+        value: vestige
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
