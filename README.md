@@ -11,3 +11,5 @@ Farmer Slot Booking & Queue Management - PS 26032
 0.0.4 -> feat: added Role Based Access Control (RBAC)
 
 0.0.5 -> feat: added slots and bookings endpoints with concurrency-safe booking
+
+0.0.6 -> feat: added queue check-in and live status tracking
