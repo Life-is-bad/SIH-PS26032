@@ -13,3 +13,5 @@ Farmer Slot Booking & Queue Management - PS 26032
 0.0.5 -> feat: added slots and bookings endpoints with concurrency-safe booking
 
 0.0.6 -> feat: added queue check-in and live status tracking
+
+1.0.0 -> feat: added frontend
