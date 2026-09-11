@@ -57,7 +57,13 @@ def get_farmer_bookings(farmer_id: int):
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            "SELECT * FROM bookings WHERE farmer_id = %s ORDER BY booking_time DESC",
+            """
+            SELECT b.*, qs.check_in_status AS queue_status
+            FROM bookings b
+            LEFT JOIN queue_status qs ON qs.booking_id = b.booking_id
+            WHERE b.farmer_id = %s
+            ORDER BY b.booking_time DESC
+            """,
             (farmer_id,),
         )
         return cursor.fetchall()
@@ -89,6 +95,32 @@ def cancel_booking(booking_id: int, farmer_id: int):
         )
         conn.commit()
         return {"success": True}
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_bookings_for_counter(counter_id: int):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """
+            SELECT b.booking_id, b.produce_type, b.status,
+                   u.full_name AS farmer_name,
+                   s.start_time, s.end_time
+            FROM bookings b
+            JOIN slots s ON s.slot_id = b.slot_id
+            JOIN users u ON u.user_id = b.farmer_id
+            LEFT JOIN queue_status qs ON qs.booking_id = b.booking_id
+            WHERE s.counter_id = %s
+              AND s.slot_date >= CURDATE()
+              AND b.status = 'booked'
+              AND qs.queue_id IS NULL
+            ORDER BY s.start_time
+            """,
+            (counter_id,),
+        )
+        return cursor.fetchall()
     finally:
         cursor.close()
         conn.close()

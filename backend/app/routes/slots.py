@@ -3,6 +3,8 @@ from app.schemas.slots import SlotCreate
 from app.models.slots import create_slot, list_slots
 from app.auth_utils import require_role, get_current_user
 from datetime import date as date_type
+from fastapi import APIRouter, Depends, HTTPException
+from app.models.slots import create_slot, list_slots, delete_slot
 
 router = APIRouter(prefix="/slots", tags=["slots"])
 
@@ -27,3 +29,11 @@ def get_slots(
     current_user: dict = Depends(get_current_user),
 ):
     return list_slots(slot_date=slot_date, counter_id=counter_id)
+
+@router.delete("/{slot_id}")
+def remove_slot(slot_id: int, current_user: dict = Depends(require_role("officer"))):
+    result = delete_slot(slot_id)
+    if "error" in result:
+        status_map = {"has_bookings": 409, "not_found": 404}
+        raise HTTPException(status_code=status_map[result["error"]], detail=result["detail"])
+    return {"deleted": True}

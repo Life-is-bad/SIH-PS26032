@@ -4,6 +4,8 @@ from app.routes import auth
 from app.auth_utils import get_current_user, require_role
 from app.routes import slots, bookings
 from app.routes import slots, bookings, queue
+from fastapi.staticfiles import StaticFiles
+from app.routes import pages
 
 app = FastAPI(title="Farmer Slot Booking & Queue Management — PS 26032")
 
@@ -11,6 +13,9 @@ app.include_router(auth.router)
 app.include_router(slots.router)
 app.include_router(bookings.router)
 app.include_router(queue.router)
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.include_router(pages.router)
 
 @app.get("/")
 def health_check():

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Sign up — Agri-Queue{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+    <h1>Create account</h1>
+    <div class="sub">Register as a farmer or procurement officer</div>
+    {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
+    <form method="post" action="/signup">
+        <div class="field">
+            <label>Role</label>
+            <select name="role" required>
+                <option value="farmer">Farmer</option>
+                <option value="officer">Officer</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Full name</label>
+            <input type="text" name="full_name" required>
+        </div>
+        <div class="field">
+            <label>Phone number</label>
+            <input type="text" name="phone_number" required>
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input type="password" name="password" required minlength="6">
+        </div>
+        <button class="btn" type="submit">Sign up</button>
+    </form>
+    <div class="form-note">Already have an account? <a href="/login">Log in</a></div>
+</div>
+{% endblock %}

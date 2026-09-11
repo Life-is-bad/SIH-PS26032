@@ -1,0 +1,17 @@
+{% for b in bookings %}
+<div class="booking-row">
+    <div>
+        <strong>Token pending</strong> — {{ b.produce_type or "—" }}
+        <div class="slot-seats">Booked {{ b.booking_time }}</div>
+    </div>
+    <div>
+        <span class="status-pill status-{{ b.queue_status or b.status }}">{{ b.queue_status or b.status }}</span>
+        {% if b.status == "booked" %}
+        <a href="#" class="cancel-link" hx-delete="/farmer/cancel/{{ b.booking_id }}" hx-target="#booking-list"
+            hx-swap="innerHTML" hx-confirm="Cancel this booking?">Cancel</a>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<p>No bookings yet.</p>
+{% endfor %}
