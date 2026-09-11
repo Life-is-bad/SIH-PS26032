@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Agri-Queue{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+
+<body>
+    <div class="site-header">
+        <a href="/" class="brand">Agri<span>Queue</span></a>
+        {% if user %}
+        <div class="user-chip">
+            <div class="avatar">{{ user.role[0]|upper }}</div>
+            <span>{{ user.role|capitalize }}</span>
+            <a href="/logout" class="logout-link">Log out</a>
+        </div>
+        {% endif %}
+    </div>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+
+</html>

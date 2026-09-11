@@ -1,0 +1,23 @@
+<table>
+    <tr>
+        <th>Farmer</th>
+        <th>Produce</th>
+        <th>Slot</th>
+        <th></th>
+    </tr>
+    {% for b in pending %}
+    <tr>
+        <td>{{ b.farmer_name }}</td>
+        <td>{{ b.produce_type or "—" }}</td>
+        <td class="mono">{{ b.start_time }}</td>
+        <td>
+            <button class="action-btn" hx-post="/officer/checkin/{{ b.booking_id }}" hx-target="#officer-panels"
+                hx-swap="innerHTML">Check in</button>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="4">No pending bookings for today.</td>
+    </tr>
+    {% endfor %}
+</table>

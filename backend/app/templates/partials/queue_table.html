@@ -1,0 +1,30 @@
+<table>
+    <tr>
+        <th>Farmer</th>
+        <th>Produce</th>
+        <th>Slot</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    {% for row in queue %}
+    <tr>
+        <td>{{ row.farmer_name }}</td>
+        <td>{{ row.produce_type or "—" }}</td>
+        <td class="mono">{{ row.start_time }}</td>
+        <td><span class="status-pill status-{{ row.check_in_status }}">{{ row.check_in_status }}</span></td>
+        <td>
+            {% if row.check_in_status == "waiting" %}
+            <button class="action-btn" hx-patch="/officer/status/{{ row.queue_id }}/in_service" hx-target="#queue-table"
+                hx-swap="innerHTML">Start service</button>
+            {% elif row.check_in_status == "in_service" %}
+            <button class="action-btn" hx-patch="/officer/status/{{ row.queue_id }}/served" hx-target="#queue-table"
+                hx-swap="innerHTML">Mark served</button>
+            {% endif %}
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="5">No one in queue right now.</td>
+    </tr>
+    {% endfor %}
+</table>

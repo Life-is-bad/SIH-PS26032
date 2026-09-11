@@ -2,7 +2,7 @@ import os
 import bcrypt
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -60,3 +60,10 @@ def require_role(required_role: str):
             )
         return current_user
     return role_checker
+
+
+def get_current_user_from_cookie(request: Request) -> dict | None:
+    token = request.cookies.get("access_token")
+    if not token:
+        return None
+    return decode_access_token(token)
