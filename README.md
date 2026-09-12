@@ -22,5 +22,6 @@ Farmer Slot Booking & Queue Management - PS 26032
 
 3.1.1 -> feat: removed comments and did some minor changes
 
+3.1.2 -> feat: changed from local host for qr scanned website to deployed
 
 Web Page Link --- https://hw8gcsmb-8000.usw3.devtunnels.ms/
