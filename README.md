@@ -54,7 +54,7 @@ cd backend
 
 # create and activate a virtual environment
 python -m venv venv
-venv\Scripts\activate
+./venv/scrips/activate
 
 # install dependencies
 pip install -r requirements.txt
