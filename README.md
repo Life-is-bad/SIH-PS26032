@@ -19,3 +19,6 @@ Farmer Slot Booking & Queue Management - PS 26032
 1.1.0 -> feat: added QR Code generation and check-in window for officer
 
 3.1.0 -> feat: Deployment
+
+
+Web Page Link --- https://hw8gcsmb-8000.usw3.devtunnels.ms/
