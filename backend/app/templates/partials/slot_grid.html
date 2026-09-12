@@ -1,19 +1,23 @@
-<div class="slot-grid">
+<div class="slot-grid" id="slot-grid-el">
     {% for slot in slots %}
-    <form class="slot-card" hx-post="/farmer/book/{{ slot.slot_id }}" hx-target="#booking-list" hx-swap="innerHTML">
-        <div class="slot-time">{{ slot.slot_date }} · {{ slot.start_time }} - {{ slot.end_time }}</div>
+    <div class="slot-card" data-slot-id="{{ slot.slot_id }}" data-start="{{ slot.start_time }}"
+        data-end="{{ slot.end_time }}" onclick="{% if slot.booked_count < slot.capacity %}selectSlot(this){% endif %}"
+        style="{% if slot.booked_count >= slot.capacity %}opacity:0.5;cursor:not-allowed;{% else %}cursor:pointer;{% endif %}">
+        <div class="slot-time">{{ slot.start_time }} - {{ slot.end_time }}</div>
         <div class="slot-seats">{{ slot.booked_count }} of {{ slot.capacity }} booked</div>
         <div class="slot-bar">
             <div style="width:{{ (slot.booked_count / slot.capacity * 100)|round }}%"></div>
         </div>
-        <div class="field" style="margin-top:10px;">
-            <input type="text" name="produce_type" placeholder="What are you bringing? (e.g. Wheat)">
-        </div>
-        <button type="submit" {% if slot.booked_count>= slot.capacity %}disabled{% endif %}>
-            {% if slot.booked_count >= slot.capacity %}Full{% else %}Book slot{% endif %}
-        </button>
-    </form>
+        {% if slot.booked_count >= slot.capacity %}<div class="slot-seats" style="margin-top:8px;">Full</div>{% endif %}
+    </div>
     {% else %}
     <p>No slots available right now.</p>
     {% endfor %}
 </div>
+
+<form id="booking-form" method="post">
+    <input type="hidden" name="produce_type" id="hidden-produce-input">
+    <button type="submit" id="book-btn" class="btn" style="margin-top:16px;width:auto;padding:12px 24px;" disabled>
+        Select a slot to book
+    </button>
+</form>

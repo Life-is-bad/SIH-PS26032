@@ -189,11 +189,53 @@ main {
     gap: 14px;
 }
 
+@media (max-width:640px) {
+    .slot-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.slot-card button {
+    margin-top: 14px;
+    width: 100%;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.slot-card button:disabled {
+    background: var(--line);
+    color: var(--ink-faint);
+    cursor: not-allowed;
+}
+
 .slot-card {
     border: 1px solid var(--line);
     border-radius: 12px;
     padding: 16px;
     background: var(--paper-raised);
+}
+
+.slot-card.selected {
+    border: 2px solid var(--marigold-deep);
+    background: var(--marigold-tint);
 }
 
 .slot-time {
@@ -276,6 +318,25 @@ main {
     color: #B0532E;
     font-size: 12px;
     text-decoration: none;
+    margin-left: 12px;
+}
+
+.qr-btn {
+    display: inline-block;
+    color: var(--indigo);
+    background: var(--indigo-tint);
+    border: 1px solid var(--indigo);
+    border-radius: 8px;
+    padding: 3px 10px;
+    margin-left: 10px;
+    font-size: 12px;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+.qr-btn:hover {
+    background: var(--indigo);
+    color: var(--paper-raised);
 }
 
 table {
@@ -736,7 +797,6 @@ body.role-farmer .status-pill {
     padding: 6px 14px;
 }
 
-/* Produce icon cards */
 .produce-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

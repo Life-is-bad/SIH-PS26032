@@ -2,16 +2,42 @@
 Farmer Slot Booking & Queue Management - PS 26032
 
 
-0.0.1 -> feat: Added initial MYSQL Schema for slot booking system
+0.1.0 -> feat: Added initial MYSQL Schema for slot booking system
 
-0.0.2 -> feat: add FastAPI backend skeleton with MySQL connection
+0.2.0 -> feat: add FastAPI backend skeleton with MySQL connection
 
-0.0.3 -> feat: add JWT auth with signup/login endpoints
+0.3.0 -> feat: add JWT auth with signup/login endpoints
 
-0.0.4 -> feat: added Role Based Access Control (RBAC)
+0.4.0 -> feat: added Role Based Access Control (RBAC)
 
-0.0.5 -> feat: added slots and bookings endpoints with concurrency-safe booking
+0.5.0 -> feat: added slots and bookings endpoints with concurrency-safe booking
 
-0.0.6 -> feat: added queue check-in and live status tracking
+1.6.0 -> feat: added queue check-in and live status tracking
 
-1.0.0 -> feat: added frontend
+2.0.0 -> feat: added frontend
+
+1.1.0 -> feat: added QR Code generation and check-in window for officer
+
+3.1.0 -> feat: deployed locally using Visual Studio Code's Port Forwarding
+
+3.1.1 -> feat: removed comments and did some minor changes
+
+3.1.2 -> feat: changed from local host for qr scanned website to deployed
+
+3.1.3 -> moved requirements.txt out
+
+3.1.4 -> moved requirements.txt back
+
+4.1.4 -> feat: deployed to railway.app
+
+5.1.4 -> feat: Updated the frontend and added QR Code and booking history
+
+5.2.4 -> feat: added Live Queue
+
+5.3.4 -> feat: added notification display after booking
+
+5.3.5 -> feat: minor changes
+
+5.4.5 -> feat: optimized the code by deleting dead code blocks and increasing efficiency
+
+Web Page Link --- https://sih-ps26032-production.up.railway.app/login

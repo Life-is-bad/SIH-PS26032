@@ -15,7 +15,6 @@ DB_CONFIG = {
 
 
 def get_connection():
-    """Returns a fresh MySQL connection. Caller is responsible for closing it."""
     return mysql.connector.connect(**DB_CONFIG)
 
 

@@ -18,17 +18,66 @@
     <body class="{{ 'role-officer' if user and user.role == 'officer' else 'role-farmer' }}"></body>
     <div class="site-header">
         <a href="/" class="brand">Agri<span>Queue</span></a>
+
         {% if user %}
-        <div class="user-chip">
-            <div class="avatar">{{ user.role[0]|upper }}</div>
-            <span>{{ user.role|capitalize }}</span>
-            <a href="/logout" class="logout-link">Log out</a>
+        <div class="site-nav">
+            {% if user.role == "farmer" %}
+            <a href="/farmer" class="{{ 'current' if active_page == 'book' else '' }}">{{ t.book_a_slot if t else "Book
+                a slot" }}</a>
+            <a href="/farmer/bookings" class="{{ 'current' if active_page == 'bookings' else '' }}">{{ t.my_bookings if
+                t else "My bookings" }}</a>
+            <a href="/farmer/queue" class="{{ 'current' if active_page == 'queue' else '' }}">{{ t.live_queue if t else
+                "Live queue" }}</a>
+            {% else %}
+            <a href="/officer?counter_id={{ counter_id or 1 }}"
+                class="{{ 'current' if active_page == 'queue' else '' }}">Live queue</a>
+            <a href="/officer?counter_id={{ counter_id or 1 }}"
+                class="{{ 'current' if active_page == 'slots' else '' }}">Slots</a>
+            {% endif %}
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px;">
+            <div class="lang-toggle">
+                <a href="?lang=en" class="{{ 'active' if lang != 'hi' else '' }}">EN</a>
+                <a href="?lang=hi" class="{{ 'active' if lang == 'hi' else '' }}">हिंदी</a>
+            </div>
+            <div class="user-chip">
+                <div class="avatar">{{ (user.full_name or user.role)[0]|upper }}</div>
+                <span>{{ user.full_name or user.role|capitalize }}</span>
+                <a href="/logout" class="logout-link">Log out</a>
+            </div>
         </div>
         {% endif %}
     </div>
     <main>
         {% block content %}{% endblock %}
     </main>
+    <div id="confirm-overlay" class="confirm-overlay">
+        <div class="confirm-box">
+            <p id="confirm-text"></p>
+            <div class="confirm-actions">
+                <button id="confirm-ok" class="btn" style="white-space:nowrap;">Yes, continue</button>
+                <button id="confirm-cancel" class="btn btn-outline">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.body.addEventListener('htmx:confirm', function (evt) {
+            if (!evt.detail.question) return;
+            evt.preventDefault();
+            document.getElementById('confirm-text').textContent = evt.detail.question;
+            document.getElementById('confirm-overlay').classList.add('confirm-open');
+
+            document.getElementById('confirm-ok').onclick = function () {
+                document.getElementById('confirm-overlay').classList.remove('confirm-open');
+                evt.detail.issueRequest(true);
+            };
+            document.getElementById('confirm-cancel').onclick = function () {
+                document.getElementById('confirm-overlay').classList.remove('confirm-open');
+            };
+        });
+    </script>
 </body>
 
 </html>

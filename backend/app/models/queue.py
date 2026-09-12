@@ -1,7 +1,7 @@
 from app.database import get_connection
 from mysql.connector import Error
 
-AVG_MINUTES_PER_FARMER = 5  # simple heuristic — replace with a real average later
+AVG_MINUTES_PER_FARMER = 5
 
 
 def check_in_booking(booking_id: int, officer_id: int):
@@ -42,10 +42,6 @@ def check_in_booking(booking_id: int, officer_id: int):
 
 
 def get_my_queue_status(farmer_id: int):
-    """
-    Finds the farmer's active checked-in booking today, and computes
-    live position + estimated wait among others waiting at the same counter.
-    """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -55,7 +51,7 @@ def get_my_queue_status(farmer_id: int):
             FROM queue_status qs
             JOIN bookings b ON b.booking_id = qs.booking_id
             JOIN slots s ON s.slot_id = b.slot_id
-            WHERE b.farmer_id = %s AND qs.check_in_status = 'waiting'
+            WHERE b.farmer_id = %s AND qs.check_in_status IN ('waiting', 'in_service')
             ORDER BY qs.checked_in_at DESC
             LIMIT 1
             """,
@@ -65,7 +61,6 @@ def get_my_queue_status(farmer_id: int):
         if mine is None:
             return {"error": "not_found", "detail": "No active checked-in booking found"}
 
-        # count how many at the same counter checked in earlier and are still waiting
         cursor.execute(
             """
             SELECT COUNT(*) AS ahead
@@ -73,8 +68,8 @@ def get_my_queue_status(farmer_id: int):
             JOIN bookings b ON b.booking_id = qs.booking_id
             JOIN slots s ON s.slot_id = b.slot_id
             WHERE s.counter_id = %s
-              AND qs.check_in_status = 'waiting'
-              AND qs.checked_in_at < %s
+            AND qs.check_in_status IN ('waiting', 'in_service')
+            AND qs.checked_in_at < %s
             """,
             (mine["counter_id"], mine["checked_in_at"]),
         )
@@ -133,7 +128,6 @@ def update_queue_status(queue_id: int, new_status: str):
             (new_status, queue_id),
         )
 
-        # if marking served/completed, also close out the booking
         if new_status == "served":
             cursor.execute(
                 "UPDATE bookings SET status = 'completed' WHERE booking_id = %s",
@@ -143,6 +137,69 @@ def update_queue_status(queue_id: int, new_status: str):
         conn.commit()
         cursor.execute("SELECT * FROM queue_status WHERE queue_id = %s", (queue_id,))
         return {"queue_status": cursor.fetchone()}
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_farmer_queue_status(farmer_id: int):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """
+            SELECT b.booking_id, b.booking_time, b.produce_type,
+                   s.counter_id, s.start_time, s.end_time,
+                   qs.queue_id, qs.check_in_status, qs.checked_in_at
+            FROM bookings b
+            JOIN slots s ON s.slot_id = b.slot_id
+            LEFT JOIN queue_status qs ON qs.booking_id = b.booking_id
+            WHERE b.farmer_id = %s AND b.status = 'booked'
+            ORDER BY b.booking_time DESC
+            LIMIT 1
+            """,
+            (farmer_id,),
+        )
+        mine = cursor.fetchone()
+        if mine is None:
+            return {"error": "not_found", "detail": "No active booking found"}
+
+        if mine["check_in_status"] is None:
+            return {
+                "booking_id": mine["booking_id"], "booking_time": mine["booking_time"],
+                "check_in_status": None, "position": None,
+                "total_in_queue": None, "estimated_wait_mins": None,
+            }
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS ahead FROM queue_status qs
+            JOIN bookings b ON b.booking_id = qs.booking_id
+            JOIN slots s ON s.slot_id = b.slot_id
+            WHERE s.counter_id = %s AND qs.check_in_status IN ('waiting', 'in_service')
+              AND qs.checked_in_at < %s
+            """,
+            (mine["counter_id"], mine["checked_in_at"]),
+        )
+        ahead = cursor.fetchone()["ahead"]
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS total FROM queue_status qs
+            JOIN bookings b ON b.booking_id = qs.booking_id
+            JOIN slots s ON s.slot_id = b.slot_id
+            WHERE s.counter_id = %s AND qs.check_in_status IN ('waiting', 'in_service')
+            """,
+            (mine["counter_id"],),
+        )
+        total = cursor.fetchone()["total"]
+
+        return {
+            "booking_id": mine["booking_id"], "booking_time": mine["booking_time"],
+            "check_in_status": mine["check_in_status"], "checked_in_at": mine["checked_in_at"],
+            "position": ahead + 1, "total_in_queue": total,
+            "estimated_wait_mins": ahead * AVG_MINUTES_PER_FARMER,
+        }
     finally:
         cursor.close()
         conn.close()
