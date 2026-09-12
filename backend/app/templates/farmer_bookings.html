@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ t.my_bookings if t else "My bookings" }} — Agri-Queue{% endblock %}
+{% block content %}
+<h1>{{ t.my_bookings if t else "My bookings" }}</h1>
+
+<details class="section-details" open>
+    <summary class="section-title">{{ t.completed if t else "Completed" }} ({{ completed|length }})</summary>
+    {% for b in completed %}
+    <div class="booking-row">
+        <div>
+            <strong>{{ t.token_pending if t else "Token pending" }}</strong> — {{ b.produce_type or "—" }}
+            <div class="slot-seats">{{ t.booked_on if t else "Booked" }} {{ b.booking_time }}</div>
+        </div>
+        <div>
+            <span class="status-pill status-{{ b.status }}">{{ b.status }}</span>
+        </div>
+    </div>
+    {% else %}
+    <p>{{ t.no_completed if t else "No completed bookings yet." }}</p>
+    {% endfor %}
+</details>
+
+<details class="section-details" open>
+    <summary class="section-title">{{ t.cancelled if t else "Cancelled" }} ({{ cancelled|length }})</summary>
+    {% for b in cancelled %}
+    <div class="booking-row">
+        <div>
+            <strong>{{ t.token_pending if t else "Token pending" }}</strong> — {{ b.produce_type or "—" }}
+            <div class="slot-seats">{{ t.booked_on if t else "Booked" }} {{ b.booking_time }}</div>
+        </div>
+        <div>
+            <span class="status-pill status-{{ b.status }}">{{ b.status }}</span>
+        </div>
+    </div>
+    {% else %}
+    <p>{{ t.no_cancelled if t else "No cancelled bookings." }}</p>
+    {% endfor %}
+</details>
+{% endblock %}

@@ -16,11 +16,32 @@
 <body>
     <div class="site-header">
         <a href="/" class="brand">Agri<span>Queue</span></a>
+
         {% if user %}
-        <div class="user-chip">
-            <div class="avatar">{{ user.role[0]|upper }}</div>
-            <span>{{ user.role|capitalize }}</span>
-            <a href="/logout" class="logout-link">Log out</a>
+        <div class="site-nav">
+            {% if user.role == "farmer" %}
+            <a href="/farmer" class="{{ 'current' if active_page == 'book' else '' }}">{{ t.book_a_slot if t else "Book
+                a slot" }}</a>
+            <a href="/farmer/bookings" class="{{ 'current' if active_page == 'bookings' else '' }}">{{ t.my_bookings if
+                t else "My bookings" }}</a>
+            {% else %}
+            <a href="/officer?counter_id={{ counter_id or 1 }}"
+                class="{{ 'current' if active_page == 'queue' else '' }}">Live queue</a>
+            <a href="/officer?counter_id={{ counter_id or 1 }}"
+                class="{{ 'current' if active_page == 'slots' else '' }}">Slots</a>
+            {% endif %}
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px;">
+            <div class="lang-toggle">
+                <a href="?lang=en" class="{{ 'active' if lang != 'hi' else '' }}">EN</a>
+                <a href="?lang=hi" class="{{ 'active' if lang == 'hi' else '' }}">हिंदी</a>
+            </div>
+            <div class="user-chip">
+                <div class="avatar">{{ (user.full_name or user.role)[0]|upper }}</div>
+                <span>{{ user.full_name or user.role|capitalize }}</span>
+                <a href="/logout" class="logout-link">Log out</a>
+            </div>
         </div>
         {% endif %}
     </div>

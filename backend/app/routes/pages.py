@@ -24,10 +24,70 @@ from app.models.bookings import (
     create_booking, get_farmer_bookings, cancel_booking,
     get_bookings_for_counter, get_booking_details, get_booking_by_token,
 )
+from app.models.models import get_user_by_id
 
 router = APIRouter(tags=["pages"])
 templates = Jinja2Templates(directory="app/templates")
+TRANSLATIONS = {
+    "en": {
+        "book_title": "Book your slot",
+        "greeting": "Namaste, {name} — choose a center and time that works for you",
+        "available_slots": "Available slots",
+        "your_bookings": "Your bookings",
+        "no_bookings": "No active bookings.",
+        "book_a_slot": "Book a slot",
+        "my_bookings": "My bookings",
+        "select_slot": "Select a slot to book",
+        "booking_details": "Booking details",
+        "select_prompt": "Select a slot on the left to see details here.",
+        "slot_label": "Slot",
+        "center_label": "Center",
+        "produce_label": "What are you bringing?",
+        "produce_placeholder": "e.g. Wheat",
+        "token_pending": "Token pending",
+        "cancel": "Cancel",
+        "view_qr": "View QR",
+        "booked_on": "Booked",
+        "no_smartphone": "No smartphone? No problem",
+        "no_smartphone_body": "Visit the center directly — you'll still get SMS/voice updates on your queue position.",
+        "km_away": "km away",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "no_completed": "No completed bookings yet.",
+        "no_cancelled": "No cancelled bookings.",
+    },
+    "hi": {
+        "book_title": "अपना स्लॉट बुक करें",
+        "greeting": "नमस्ते, {name} — अपने लिए सही केंद्र और समय चुनें",
+        "available_slots": "उपलब्ध स्लॉट",
+        "your_bookings": "आपकी बुकिंग",
+        "no_bookings": "कोई सक्रिय बुकिंग नहीं।",
+        "book_a_slot": "स्लॉट बुक करें",
+        "my_bookings": "मेरी बुकिंग",
+        "select_slot": "बुक करने के लिए एक स्लॉट चुनें",
+        "booking_details": "बुकिंग विवरण",
+        "select_prompt": "विवरण देखने के लिए बाईं ओर एक स्लॉट चुनें।",
+        "slot_label": "स्लॉट",
+        "center_label": "केंद्र",
+        "produce_label": "आप क्या ला रहे हैं?",
+        "produce_placeholder": "उदा. गेहूं",
+        "token_pending": "टोकन प्रतीक्षित",
+        "view_qr": "क्यूआर कोड देखें",
+        "cancel": "रद्द करें",
+        "booked_on": "बुक किया गया",
+        "no_smartphone": "स्मार्टफोन नहीं? कोई बात नहीं",
+        "no_smartphone_body": "सीधे केंद्र पर जाएं — आपको अपनी कतार की स्थिति की SMS/वॉइस अपडेट फिर भी मिलेगी।",
+        "km_away": "किमी दूर",
+        "completed": "पूर्ण",
+        "cancelled": "रद्द",
+        "no_completed": "अभी तक कोई पूर्ण बुकिंग नहीं।",
+        "no_cancelled": "कोई रद्द बुकिंग नहीं।",
+    },
+}
 
+
+def get_lang(request: Request) -> str:
+    return request.cookies.get("lang", "en")
 
 @router.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -90,18 +150,64 @@ def logout():
     return response
 
 
-@router.get("/farmer", response_class=HTMLResponse)
-def farmer_page(request: Request):
+@router.get("/farmer/bookings", response_class=HTMLResponse)
+def farmer_bookings_page(request: Request, lang: str | None = None):
     user = get_current_user_from_cookie(request)
     if user is None or user["role"] != "farmer":
         return RedirectResponse("/login")
-    farmer_id = int(user["sub"])
-    slots = list_upcoming_slots()
-    bookings = get_farmer_bookings(farmer_id)
-    return templates.TemplateResponse(
-        request, "farmer.html",
-        {"user": user, "slots": slots, "bookings": bookings},
+    full_user = get_user_by_id(int(user["sub"]))
+    user["full_name"] = full_user["full_name"] if full_user else None
+
+    bookings = get_farmer_bookings(int(user["sub"]))
+    completed = [b for b in bookings if b["status"] == "completed"]
+    cancelled = [b for b in bookings if b["status"] == "cancelled"]
+
+    current_lang = lang or get_lang(request)
+    t = TRANSLATIONS[current_lang]
+
+    response = templates.TemplateResponse(
+        request, "farmer_bookings.html",
+        {
+            "user": user, "completed": completed, "cancelled": cancelled,
+            "active_page": "bookings", "lang": current_lang, "t": t,
+        },
     )
+    if lang:
+        response.set_cookie("lang", lang, max_age=31536000)
+    return response
+
+
+@router.get("/farmer", response_class=HTMLResponse)
+def farmer_page(request: Request, counter_id: int | None = None, lang: str | None = None):
+    user = get_current_user_from_cookie(request)
+    if user is None or user["role"] != "farmer":
+        return RedirectResponse("/login")
+    full_user = get_user_by_id(int(user["sub"]))
+    user["full_name"] = full_user["full_name"] if full_user else None
+
+    counters = list_counters()
+    if counter_id is None and counters:
+        counter_id = counters[0]["counter_id"]
+
+    selected_counter = next((c for c in counters if c["counter_id"] == counter_id), None)
+    slots = list_upcoming_slots(counter_id=counter_id) if counter_id else []
+    bookings = get_farmer_bookings(int(user["sub"]))
+
+    current_lang = lang or get_lang(request)
+    t = TRANSLATIONS[current_lang]
+
+    response = templates.TemplateResponse(
+        request, "farmer.html",
+        {
+            "user": user, "slots": slots, "bookings": bookings,
+            "active_page": "book", "counters": counters,
+            "selected_counter": selected_counter, "counter_id": counter_id,
+            "lang": current_lang, "t": t,
+        },
+    )
+    if lang:
+        response.set_cookie("lang", lang, max_age=31536000)
+    return response
 
 
 @router.post("/farmer/book/{slot_id}")
@@ -111,11 +217,13 @@ def farmer_book(request: Request, slot_id: int, produce_type: str = Form(None)):
         return RedirectResponse("/login")
     result = create_booking(int(user["sub"]), slot_id, produce_type=produce_type or None)
     if "error" in result:
+        counters = list_counters()
         slots = list_upcoming_slots()
         bookings = get_farmer_bookings(int(user["sub"]))
+        t = TRANSLATIONS[get_lang(request)]
         return templates.TemplateResponse(
             request, "farmer.html",
-            {"user": user, "slots": slots, "bookings": bookings, "error": result["detail"]},
+            {"user": user, "slots": slots, "bookings": bookings, "error": result["detail"], "counters": counters, "t": t, "lang": get_lang(request)},
         )
     booking_id = result["booking"]["booking_id"]
     return RedirectResponse(f"/farmer/booking/{booking_id}/confirmation", status_code=303)
@@ -128,8 +236,20 @@ def farmer_cancel(request: Request, booking_id: int):
         return RedirectResponse("/login")
     cancel_booking(booking_id, int(user["sub"]))
     bookings = get_farmer_bookings(int(user["sub"]))
+    t = TRANSLATIONS[get_lang(request)]
     return templates.TemplateResponse(
-        request, "partials/booking_list.html", {"bookings": bookings}
+        request, "partials/booking_list.html", {"bookings": bookings, "t": t}
+    )
+
+
+@router.get("/farmer/bookings-partial", response_class=HTMLResponse)
+def farmer_bookings_partial(request: Request):
+    user = get_current_user_from_cookie(request)
+    if user is None or user["role"] != "farmer":
+        return RedirectResponse("/login")
+    bookings = get_farmer_bookings(int(user["sub"]))
+    return templates.TemplateResponse(
+        request, "partials/booking_list.html", {"bookings": bookings, "t": TRANSLATIONS[get_lang(request)]}
     )
 
 
@@ -192,13 +312,14 @@ def officer_page(request: Request, counter_id: int = 1):
     user = get_current_user_from_cookie(request)
     if user is None or user["role"] != "officer":
         return RedirectResponse("/login")
+    full_user = get_user_by_id(int(user["sub"]))
+    user["full_name"] = full_user["full_name"] if full_user else None
     queue = get_live_queue(counter_id)
     counters = list_counters()
-    pending = get_bookings_for_counter(counter_id,)
-    slots = list_upcoming_slots(counter_id)
+    pending = get_bookings_for_counter(counter_id)
     return templates.TemplateResponse(
         request, "officer.html",
-        {"user": user, "queue": queue, "counter_id": counter_id, "counters": counters, "pending": pending, "slots": slots},
+        {"user": user, "queue": queue, "counter_id": counter_id, "counters": counters, "pending": pending, "active_page": "queue"},
     )
 
 

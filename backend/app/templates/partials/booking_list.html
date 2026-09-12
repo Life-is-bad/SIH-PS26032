@@ -1,17 +1,16 @@
-{% for b in bookings %}
+{% for b in bookings if b.status == "booked" %}
 <div class="booking-row">
     <div>
-        <strong>Token pending</strong> — {{ b.produce_type or "—" }}
-        <div class="slot-seats">Booked {{ b.booking_time }}</div>
+        <strong>{{ t.token_pending if t else "Token pending" }}</strong> — {{ b.produce_type or "—" }}
+        <a href="/farmer/booking/{{ b.booking_id }}/confirmation" class="qr-btn">{{ t.view_qr if t else "View QR" }}</a>
+        <div class="slot-seats">{{ t.booked_on if t else "Booked" }} {{ b.booking_time }}</div>
     </div>
     <div>
         <span class="status-pill status-{{ b.queue_status or b.status }}">{{ b.queue_status or b.status }}</span>
-        {% if b.status == "booked" %}
         <a href="#" class="cancel-link" hx-delete="/farmer/cancel/{{ b.booking_id }}" hx-target="#booking-list"
-            hx-swap="innerHTML" hx-confirm="Cancel this booking?">Cancel</a>
-        {% endif %}
+            hx-swap="innerHTML" hx-confirm="Cancel this booking?">{{ t.cancel if t else "Cancel" }}</a>
     </div>
 </div>
 {% else %}
-<p>No bookings yet.</p>
+<p>{{ t.no_bookings if t else "No active bookings." }}</p>
 {% endfor %}
