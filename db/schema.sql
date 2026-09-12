@@ -26,11 +26,6 @@
 --      with "-- TRADE-OFF:" comments.
 -- =====================================================================
 
-DROP DATABASE IF EXISTS SIH_PS26032;
-CREATE DATABASE SIH_PS26032
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
 USE SIH_PS26032;
 
 -- ---------------------------------------------------------------------
@@ -115,11 +110,24 @@ CREATE TABLE bookings (
     slot_id         BIGINT UNSIGNED NOT NULL,
     status          ENUM('booked', 'cancelled', 'rescheduled', 'completed')
                         NOT NULL DEFAULT 'booked',
-    booking_time    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- when the booking was made
-    produce_type    VARCHAR(80) NULL,   -- optional: what the farmer is bringing
+    booking_time    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    produce_type    VARCHAR(80) NULL,
+    qr_token        VARCHAR(64) NULL,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
                         ON UPDATE CURRENT_TIMESTAMP,
+
+    active_lock BIGINT UNSIGNED GENERATED ALWAYS AS (
+        IF(status = 'booked', farmer_id, NULL)
+    ) STORED,
+
+    CONSTRAINT fk_bookings_farmer FOREIGN KEY (farmer_id)
+        REFERENCES users(user_id) ON DELETE RESTRICT,
+    CONSTRAINT fk_bookings_slot FOREIGN KEY (slot_id)
+        REFERENCES slots(slot_id) ON DELETE RESTRICT,
+    CONSTRAINT uq_bookings_active UNIQUE (slot_id, active_lock),
+    CONSTRAINT uq_bookings_qr_token UNIQUE (qr_token)
+) ENGINE=InnoDB;
 
     -- ---------------------------------------------------------------
     -- THE DOUBLE-BOOKING TRICK:
