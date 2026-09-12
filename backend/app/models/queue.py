@@ -51,7 +51,7 @@ def get_my_queue_status(farmer_id: int):
             FROM queue_status qs
             JOIN bookings b ON b.booking_id = qs.booking_id
             JOIN slots s ON s.slot_id = b.slot_id
-            WHERE b.farmer_id = %s AND qs.check_in_status = 'waiting'
+            WHERE b.farmer_id = %s AND qs.check_in_status IN ('waiting', 'in_service')
             ORDER BY qs.checked_in_at DESC
             LIMIT 1
             """,
@@ -68,8 +68,8 @@ def get_my_queue_status(farmer_id: int):
             JOIN bookings b ON b.booking_id = qs.booking_id
             JOIN slots s ON s.slot_id = b.slot_id
             WHERE s.counter_id = %s
-              AND qs.check_in_status = 'waiting'
-              AND qs.checked_in_at < %s
+            AND qs.check_in_status IN ('waiting', 'in_service')
+            AND qs.checked_in_at < %s
             """,
             (mine["counter_id"], mine["checked_in_at"]),
         )
