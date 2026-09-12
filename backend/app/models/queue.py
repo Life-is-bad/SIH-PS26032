@@ -1,7 +1,7 @@
 from app.database import get_connection
 from mysql.connector import Error
 
-AVG_MINUTES_PER_FARMER = 5  # simple heuristic — replace with a real average later
+AVG_MINUTES_PER_FARMER = 5
 
 
 def check_in_booking(booking_id: int, officer_id: int):
@@ -42,10 +42,6 @@ def check_in_booking(booking_id: int, officer_id: int):
 
 
 def get_my_queue_status(farmer_id: int):
-    """
-    Finds the farmer's active checked-in booking today, and computes
-    live position + estimated wait among others waiting at the same counter.
-    """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -65,7 +61,6 @@ def get_my_queue_status(farmer_id: int):
         if mine is None:
             return {"error": "not_found", "detail": "No active checked-in booking found"}
 
-        # count how many at the same counter checked in earlier and are still waiting
         cursor.execute(
             """
             SELECT COUNT(*) AS ahead
@@ -133,7 +128,6 @@ def update_queue_status(queue_id: int, new_status: str):
             (new_status, queue_id),
         )
 
-        # if marking served/completed, also close out the booking
         if new_status == "served":
             cursor.execute(
                 "UPDATE bookings SET status = 'completed' WHERE booking_id = %s",

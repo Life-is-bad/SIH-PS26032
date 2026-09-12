@@ -12,8 +12,16 @@ Farmer Slot Booking & Queue Management - PS 26032
 
 0.5.0 -> feat: added slots and bookings endpoints with concurrency-safe booking
 
-0.6.0 -> feat: added queue check-in and live status tracking
+1.6.0 -> feat: added queue check-in and live status tracking
 
-1.0.0 -> feat: added frontend
+2.0.0 -> feat: added frontend
 
 1.1.0 -> feat: added QR Code generation and check-in window for officer
+
+3.1.0 -> feat: deployed locally using Visual Studio Code's Port Forwarding
+
+3.1.1 -> feat: removed comments and did some minor changes
+
+3.1.2 -> feat: changed from local host for qr scanned website to deployed
+
+Web Page Link --- https://hw8gcsmb-8000.usw3.devtunnels.ms/
