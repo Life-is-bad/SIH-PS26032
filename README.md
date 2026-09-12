@@ -28,4 +28,14 @@ Farmer Slot Booking & Queue Management - PS 26032
 
 3.1.4 -> moved requirements.txt back
 
-Web Page Link --- https://hw8gcsmb-8000.usw3.devtunnels.ms/
+4.1.4 -> feat: deployed to railway.app
+
+5.1.4 -> feat: Updated the frontend and added QR Code and booking history
+
+5.2.4 -> feat: added Live Queue
+
+5.3.4 -> feat: added notification display after booking
+
+5.3.5 -> feat: minor changes
+
+Web Page Link --- https://sih-ps26032-production.up.railway.app/login
