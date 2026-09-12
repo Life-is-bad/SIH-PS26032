@@ -24,6 +24,8 @@
                 a slot" }}</a>
             <a href="/farmer/bookings" class="{{ 'current' if active_page == 'bookings' else '' }}">{{ t.my_bookings if
                 t else "My bookings" }}</a>
+            <a href="/farmer/queue" class="{{ 'current' if active_page == 'queue' else '' }}">{{ t.live_queue if t else
+                "Live queue" }}</a>
             {% else %}
             <a href="/officer?counter_id={{ counter_id or 1 }}"
                 class="{{ 'current' if active_page == 'queue' else '' }}">Live queue</a>
