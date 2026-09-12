@@ -25,8 +25,7 @@
                     </div>
                     <div class="dist">{{ selected_counter.location_desc if selected_counter else "" }}</div>
                 </div>
-                <select name="counter_id" onchange="document.getElementById('counter-form').submit()"
-                    style="margin-top:8px;">
+                <select name="counter_id" onchange="document.getElementById('counter-form').submit()">
                     {% for c in counters %}
                     <option value="{{ c.counter_id }}" {% if c.counter_id==counter_id %}selected{% endif %}>{{
                         c.counter_name }}</option>
