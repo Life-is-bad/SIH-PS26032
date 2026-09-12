@@ -50,6 +50,32 @@
     <main>
         {% block content %}{% endblock %}
     </main>
+    <div id="confirm-overlay" class="confirm-overlay">
+        <div class="confirm-box">
+            <p id="confirm-text"></p>
+            <div class="confirm-actions">
+                <button id="confirm-ok" class="btn" style="white-space:nowrap;">Yes, continue</button>
+                <button id="confirm-cancel" class="btn btn-outline">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.body.addEventListener('htmx:confirm', function (evt) {
+            if (!evt.detail.question) return;
+            evt.preventDefault();
+            document.getElementById('confirm-text').textContent = evt.detail.question;
+            document.getElementById('confirm-overlay').classList.add('confirm-open');
+
+            document.getElementById('confirm-ok').onclick = function () {
+                document.getElementById('confirm-overlay').classList.remove('confirm-open');
+                evt.detail.issueRequest(true);
+            };
+            document.getElementById('confirm-cancel').onclick = function () {
+                document.getElementById('confirm-overlay').classList.remove('confirm-open');
+            };
+        });
+    </script>
 </body>
 
 </html>

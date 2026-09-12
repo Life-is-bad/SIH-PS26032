@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Slot booked — Agri-Queue{% endblock %}
 {% block content %}
+<div id="booking-toast" class="toast">✓ {{ t.booking_success if t else "Booking confirmed!" }}</div>
 <div class="auth-wrap" style="text-align:center;">
     <h1>Slot booked</h1>
     <p class="sub">{{ booking.counter_name }} &middot; {{ booking.slot_date }}</p>
@@ -27,4 +28,9 @@
 
     <a href="/farmer" class="btn" style="display:block; margin-top:20px; text-decoration:none;">Back to bookings</a>
 </div>
+<script>
+    setTimeout(() => {
+        document.getElementById('booking-toast').classList.add('toast-hide');
+    }, 3000);
+</script>
 {% endblock %}
