@@ -42,4 +42,6 @@ Farmer Slot Booking & Queue Management - PS 26032
 
 5.5.5 -> style: center nav, bigger farmer UI, produce icon shortcuts
 
+5.6.5 -> style: added subtle animations
+
 Web Page Link --- https://sih-ps26032-production.up.railway.app/login
