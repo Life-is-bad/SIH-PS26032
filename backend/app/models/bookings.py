@@ -4,10 +4,6 @@ from mysql.connector import Error
 
 
 def create_booking(farmer_id: int, slot_id: int, produce_type: str | None):
-    """
-    Locks the slot row before checking capacity, so two farmers booking
-    the same last seat at the same instant can't both succeed.
-    """
     conn = get_connection()
     try:
         conn.start_transaction()
@@ -122,7 +118,6 @@ def get_bookings_for_counter(counter_id: int):
 
 
 def get_booking_details(booking_id: int, farmer_id: int):
-    """Full booking + slot + counter info for the confirmation page."""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -145,7 +140,6 @@ def get_booking_details(booking_id: int, farmer_id: int):
 
 
 def get_booking_by_token(token: str):
-    """Used by the officer's scan endpoint to look up who this QR belongs to."""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:
