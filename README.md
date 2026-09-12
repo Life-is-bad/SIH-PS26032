@@ -40,4 +40,6 @@ Farmer Slot Booking & Queue Management - PS 26032
 
 5.4.5 -> feat: optimized the code by deleting dead code blocks and increasing efficiency
 
+5.5.5 -> style: center nav, bigger farmer UI, produce icon shortcuts
+
 Web Page Link --- https://sih-ps26032-production.up.railway.app/login
