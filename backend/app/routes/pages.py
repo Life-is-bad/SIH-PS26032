@@ -68,6 +68,7 @@ TRANSLATIONS = {
         "of_label": "of",
         "in_service": "In service",
         "no_active_booking": "No active booking. Book a slot to see your queue status.",
+        "booking_success": "Booking confirmed!"
     },
     "hi": {
         "book_title": "अपना स्लॉट बुक करें",
@@ -108,6 +109,7 @@ TRANSLATIONS = {
         "of_label": "में से",
         "in_service": "सेवा में",
         "no_active_booking": "कोई सक्रिय बुकिंग नहीं। अपनी कतार की स्थिति देखने के लिए एक स्लॉट बुक करें।",
+        "booking_success": "बुकिंग की पुष्टि हुई!"
     },
 }
 
