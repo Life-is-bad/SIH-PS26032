@@ -1,14 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Book a slot — Agri-Queue{% endblock %}
 {% block content %}
-<h1>Book your slot</h1>
-<div class="section-title">Available slots</div>
-<div id="slot-list">
-    {% include "partials/slot_grid.html" %}
+<div class="browse-layout">
+    <div>
+        <h1>{{ t.book_title }}</h1>
+        <div class="greet">{{ t.greeting.format(name=user.full_name or "Farmer") }}</div>
+
+        <div class="section-title">{{ t.available_slots }}</div>
+        <div id="slot-list">
+            {% include "partials/slot_grid.html" %}
+        </div>
+
+        <div class="section-title">{{ t.your_bookings }}</div>
+        <div id="booking-list" hx-get="/farmer/bookings-partial" hx-trigger="every 2s" hx-swap="innerHTML">
+            {% include "partials/booking_list.html" %}
+        </div>
+    </div>
+
+    <div>
+        <form id="counter-form" method="get" action="/farmer">
+            <div class="counter-select">
+                <div>
+                    <div class="name">{{ selected_counter.counter_name if selected_counter else "Select a center" }}
+                    </div>
+                    <div class="dist">{{ selected_counter.location_desc if selected_counter else "" }}</div>
+                </div>
+                <select name="counter_id" onchange="document.getElementById('counter-form').submit()"
+                    style="margin-top:8px;">
+                    {% for c in counters %}
+                    <option value="{{ c.counter_id }}" {% if c.counter_id==counter_id %}selected{% endif %}>{{
+                        c.counter_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <div class="side-card" id="booking-details-card" style="margin-top:16px;">
+            <h3>{{ t.booking_details }}</h3>
+            <div id="no-selection-msg" style="font-size:12px;color:var(--ink-soft);">
+                {{ t.select_prompt }}
+            </div>
+            <div id="selected-details" style="display:none;">
+                <div class="side-mini"><span>{{ t.slot_label }}</span><b id="detail-slot-time">—</b></div>
+                <div class="side-mini"><span>{{ t.center_label }}</span><b>Sohna, Sector 4</b></div>
+                <div class="field" style="margin-top:12px;">
+                    <label>{{ t.produce_label }}</label>
+                    <input type="text" id="produce-visible-input" placeholder="{{ t.produce_placeholder }}"
+                        oninput="syncProduce()">
+                </div>
+            </div>
+        </div>
+
+        <div class="fallback-note">
+            <b>{{ t.no_smartphone }}</b>
+            {{ t.no_smartphone_body }}
+        </div>
+    </div>
 </div>
 
-<div class="section-title">Your bookings</div>
-<div id="booking-list">
-    {% include "partials/booking_list.html" %}
-</div>
+<script>
+    function selectSlot(card) {
+        document.querySelectorAll('.slot-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+
+        const slotId = card.dataset.slotId;
+        const start = card.dataset.start;
+        const end = card.dataset.end;
+
+        document.getElementById('booking-form').action = '/farmer/book/' + slotId;
+        document.getElementById('detail-slot-time').textContent = start + ' - ' + end;
+        document.getElementById('no-selection-msg').style.display = 'none';
+        document.getElementById('selected-details').style.display = 'block';
+
+        const btn = document.getElementById('book-btn');
+        btn.disabled = false;
+        btn.textContent = '{{ t.book_a_slot }} ' + start + ' - ' + end;
+    }
+
+    function syncProduce() {
+        document.getElementById('hidden-produce-input').value =
+            document.getElementById('produce-visible-input').value;
+    }
+</script>
 {% endblock %}

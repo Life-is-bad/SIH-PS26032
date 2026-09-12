@@ -54,7 +54,13 @@ def get_farmer_bookings(farmer_id: int):
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            "SELECT * FROM bookings WHERE farmer_id = %s ORDER BY booking_time DESC",
+            """
+            SELECT b.*, qs.check_in_status AS queue_status
+            FROM bookings b
+            LEFT JOIN queue_status qs ON qs.booking_id = b.booking_id
+            WHERE b.farmer_id = %s
+            ORDER BY b.booking_time DESC
+            """,
             (farmer_id,),
         )
         return cursor.fetchall()
