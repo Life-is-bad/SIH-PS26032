@@ -34,4 +34,6 @@ Farmer Slot Booking & Queue Management - PS 26032
 
 5.2.4 -> feat: added Live Queue
 
+5.3.4 -> feat: added notification display after booking
+
 Web Page Link --- https://sih-ps26032-production.up.railway.app/login
