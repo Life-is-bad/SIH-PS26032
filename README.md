@@ -28,4 +28,6 @@ Farmer Slot Booking & Queue Management - PS 26032
 
 3.1.4 -> moved requirements.txt back
 
-Web Page Link --- https://hw8gcsmb-8000.usw3.devtunnels.ms/
+4.1.4 -> Deployed to railway.app
+
+Web Page Link --- https://sih-ps26032-production.up.railway.app/login
