@@ -1,3 +1,4 @@
+import os
 import qrcode
 import io
 from fastapi.responses import StreamingResponse
@@ -153,7 +154,8 @@ def farmer_booking_qr(request: Request, booking_id: int):
     booking = get_booking_details(booking_id, int(user["sub"]))
     if booking is None or not booking["qr_token"]:
         return RedirectResponse("/farmer")
-    scan_url = str(request.base_url) + f"officer/scan/{booking['qr_token']}"
+    base_url = os.getenv("PUBLIC_BASE_URL") or str(request.base_url).rstrip("/")
+    scan_url = f"{base_url}/officer/scan/{booking['qr_token']}"
     img = qrcode.make(scan_url)
     buf = io.BytesIO()
     img.save(buf, format="PNG")
