@@ -615,3 +615,41 @@ td {
 .section-details[open] summary.section-title::before {
     transform: rotate(90deg);
 }
+
+.queue-step {
+    position: relative;
+    padding: 4px 0 20px 32px;
+    border-left: 2px solid var(--line);
+    margin-left: 10px;
+}
+
+.queue-step:last-child {
+    border-left: 2px solid transparent;
+}
+
+.queue-step::before {
+    content: "";
+    position: absolute;
+    left: -11px;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--paper-raised);
+    border: 2px solid var(--line);
+}
+
+.queue-step.done::before {
+    background: var(--leaf);
+    border-color: var(--leaf);
+}
+
+.queue-step.current::before {
+    border-color: var(--marigold-deep);
+    background: var(--marigold);
+}
+
+.queue-step.pending b,
+.queue-step.pending .sub {
+    color: var(--ink-faint);
+}

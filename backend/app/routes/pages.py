@@ -18,7 +18,7 @@ from app.models.slots import list_upcoming_slots
 from app.models.slots import create_slot
 from app.models.counters import list_counters
 from app.models.bookings import get_bookings_for_counter
-from app.models.queue import check_in_booking
+from app.models.queue import check_in_booking, get_farmer_queue_status
 from app.models.slots import list_upcoming_slots, delete_slot
 from app.models.bookings import (
     create_booking, get_farmer_bookings, cancel_booking,
@@ -55,6 +55,19 @@ TRANSLATIONS = {
         "cancelled": "Cancelled",
         "no_completed": "No completed bookings yet.",
         "no_cancelled": "No cancelled bookings.",
+        "live_queue": "Live queue",
+        "your_token": "Your token",
+        "farmers_ahead": "farmers ahead of you",
+        "minutes_wait": "minutes estimated wait",
+        "booking_confirmed": "Booking confirmed",
+        "checked_in_gate": "Checked in at gate",
+        "qr_scanned": "QR scanned",
+        "not_checked_in": "Not checked in yet",
+        "waiting_in_queue": "Waiting in queue",
+        "position_label": "Position",
+        "of_label": "of",
+        "in_service": "In service",
+        "no_active_booking": "No active booking. Book a slot to see your queue status.",
     },
     "hi": {
         "book_title": "अपना स्लॉट बुक करें",
@@ -82,6 +95,19 @@ TRANSLATIONS = {
         "cancelled": "रद्द",
         "no_completed": "अभी तक कोई पूर्ण बुकिंग नहीं।",
         "no_cancelled": "कोई रद्द बुकिंग नहीं।",
+        "live_queue": "लाइव कतार",
+        "your_token": "आपका टोकन",
+        "farmers_ahead": "किसान आपसे आगे",
+        "minutes_wait": "मिनट अनुमानित प्रतीक्षा",
+        "booking_confirmed": "बुकिंग की पुष्टि हुई",
+        "checked_in_gate": "गेट पर चेक-इन हुआ",
+        "qr_scanned": "क्यूआर स्कैन किया गया",
+        "not_checked_in": "अभी तक चेक-इन नहीं हुआ",
+        "waiting_in_queue": "कतार में प्रतीक्षारत",
+        "position_label": "स्थान",
+        "of_label": "में से",
+        "in_service": "सेवा में",
+        "no_active_booking": "कोई सक्रिय बुकिंग नहीं। अपनी कतार की स्थिति देखने के लिए एक स्लॉट बुक करें।",
     },
 }
 
@@ -281,6 +307,28 @@ def farmer_booking_qr(request: Request, booking_id: int):
     img.save(buf, format="PNG")
     buf.seek(0)
     return StreamingResponse(buf, media_type="image/png")
+
+
+@router.get("/farmer/queue", response_class=HTMLResponse)
+def farmer_queue_page(request: Request, lang: str | None = None):
+    user = get_current_user_from_cookie(request)
+    if user is None or user["role"] != "farmer":
+        return RedirectResponse("/login")
+    full_user = get_user_by_id(int(user["sub"]))
+    user["full_name"] = full_user["full_name"] if full_user else None
+
+    status = get_farmer_queue_status(int(user["sub"]))
+
+    current_lang = lang or get_lang(request)
+    t = TRANSLATIONS[current_lang]
+
+    response = templates.TemplateResponse(
+        request, "farmer_queue.html",
+        {"user": user, "status": status, "active_page": "queue", "lang": current_lang, "t": t},
+    )
+    if lang:
+        response.set_cookie("lang", lang, max_age=31536000)
+    return response
 
 
 @router.get("/officer/scan/{token}", response_class=HTMLResponse)

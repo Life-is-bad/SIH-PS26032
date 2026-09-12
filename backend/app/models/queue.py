@@ -140,3 +140,66 @@ def update_queue_status(queue_id: int, new_status: str):
     finally:
         cursor.close()
         conn.close()
+
+
+def get_farmer_queue_status(farmer_id: int):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """
+            SELECT b.booking_id, b.booking_time, b.produce_type,
+                   s.counter_id, s.start_time, s.end_time,
+                   qs.queue_id, qs.check_in_status, qs.checked_in_at
+            FROM bookings b
+            JOIN slots s ON s.slot_id = b.slot_id
+            LEFT JOIN queue_status qs ON qs.booking_id = b.booking_id
+            WHERE b.farmer_id = %s AND b.status = 'booked'
+            ORDER BY b.booking_time DESC
+            LIMIT 1
+            """,
+            (farmer_id,),
+        )
+        mine = cursor.fetchone()
+        if mine is None:
+            return {"error": "not_found", "detail": "No active booking found"}
+
+        if mine["check_in_status"] is None:
+            return {
+                "booking_id": mine["booking_id"], "booking_time": mine["booking_time"],
+                "check_in_status": None, "position": None,
+                "total_in_queue": None, "estimated_wait_mins": None,
+            }
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS ahead FROM queue_status qs
+            JOIN bookings b ON b.booking_id = qs.booking_id
+            JOIN slots s ON s.slot_id = b.slot_id
+            WHERE s.counter_id = %s AND qs.check_in_status IN ('waiting', 'in_service')
+              AND qs.checked_in_at < %s
+            """,
+            (mine["counter_id"], mine["checked_in_at"]),
+        )
+        ahead = cursor.fetchone()["ahead"]
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS total FROM queue_status qs
+            JOIN bookings b ON b.booking_id = qs.booking_id
+            JOIN slots s ON s.slot_id = b.slot_id
+            WHERE s.counter_id = %s AND qs.check_in_status IN ('waiting', 'in_service')
+            """,
+            (mine["counter_id"],),
+        )
+        total = cursor.fetchone()["total"]
+
+        return {
+            "booking_id": mine["booking_id"], "booking_time": mine["booking_time"],
+            "check_in_status": mine["check_in_status"], "checked_in_at": mine["checked_in_at"],
+            "position": ahead + 1, "total_in_queue": total,
+            "estimated_wait_mins": ahead * AVG_MINUTES_PER_FARMER,
+        }
+    finally:
+        cursor.close()
+        conn.close()
