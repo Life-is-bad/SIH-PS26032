@@ -96,6 +96,7 @@ Visit `http://localhost:8000` and sign up as either a farmer or an officer to ge
 | 5.4.5 | Optimized the code — removed dead code blocks, improved efficiency |
 | 5.5.5 | Centered nav, larger farmer-facing UI, produce quick-select shortcuts |
 | 5.6.5 | Added subtle motion/animations |
+| 5.7.5 | Added English and Hindi Translations for officer and removed the unessential "Slots" option from the officer window |
 
 ## License
 
