@@ -1,4 +1,8 @@
 <div class="section-title">{{ t.awaiting_checkin if t else "Today's bookings — awaiting check-in" }}</div>
+<div id="checkin-list" hx-get="/officer/checkin-partial?counter_id={{ counter_id }}" hx-trigger="every 5s"
+    hx-swap="innerHTML">
+    {% include "partials/checkin_list.html" %}
+</div>
 
 <div class="section-title">Live queue</div>
 <div id="queue-table" hx-get="/officer/queue-partial?counter_id={{ counter_id }}" hx-trigger="every 5s"

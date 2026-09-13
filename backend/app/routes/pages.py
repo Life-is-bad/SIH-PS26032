@@ -484,6 +484,14 @@ def officer_checkin(request: Request, booking_id: int, counter_id: int = 1):
     )
 
 
+@router.get("/officer/checkin-partial", response_class=HTMLResponse)
+def officer_checkin_partial(request: Request, counter_id: int = 1):
+    pending = get_bookings_for_counter(counter_id)
+    return templates.TemplateResponse(
+        request, "partials/checkin_list.html", {"pending": pending}
+    )
+
+
 @router.delete("/officer/slots/{slot_id}", response_class=HTMLResponse)
 def officer_delete_slot(request: Request, slot_id: int, counter_id: int = 1):
     user, redirect = require_page_user(request, "officer")

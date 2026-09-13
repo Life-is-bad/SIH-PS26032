@@ -2,7 +2,14 @@
 {% block title %}Officer console — Agri-Queue{% endblock %}
 {% block content %}
 <h1>{{ (t.live_queue_heading if t else "Live queue — Counter {counter}").format(counter=counter_id) }}</h1>
-
+<form id="counter-switch-form" method="get" action="/officer" style="margin-bottom:20px;">
+    <select name="counter_id" id="switcher-select" onchange="document.getElementById('counter-switch-form').submit()">
+        {% for c in counters %}
+        <option value="{{ c.counter_id }}" {% if c.counter_id==counter_id %}selected{% endif %}>{{ c.counter_name }}
+        </option>
+        {% endfor %}
+    </select>
+</form>
 <div id="add-slot-section" class="section-title">{{ t.add_slot if t else "Add a new slot" }}</div>
 <form method="post" action="/officer/slots/new"
     style="display:flex;gap:10px;align-items:end;margin-bottom:30px;flex-wrap:wrap;">
