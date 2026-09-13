@@ -62,7 +62,30 @@ TRANSLATIONS = {
         "of_label": "of",
         "in_service": "In service",
         "no_active_booking": "No active booking. Book a slot to see your queue status.",
-        "booking_success": "Booking confirmed!"
+        "booking_success": "Booking confirmed!",
+        "live_queue": "Live queue",
+        "slots_nav": "Slots",
+        "add_slot": "Add a new slot",
+        "awaiting_checkin": "Today's bookings — awaiting check-in",
+        "live_queue_heading": "Live queue — Counter {counter}",
+        "manage_slots": "Manage slots",
+        "col_date": "Date",
+        "col_time": "Time",
+        "col_booked": "Booked",
+        "no_upcoming_slots": "No upcoming slots for this counter.",
+        "col_farmer": "Farmer",
+        "col_produce": "Produce",
+        "col_slot": "Slot",
+        "col_status": "Status",
+        "col_actions": "Actions",
+        "no_one_waiting": "No one in queue right now.",
+        "check_in_btn": "Check in",
+        "counter_label": "Counter",
+        "date_label": "Date",
+        "start_time_label": "Start time",
+        "end_time_label": "End time",
+        "capacity_label": "Capacity",
+        "add_slot_btn": "Add slot",
     },
     "hi": {
         "book_title": "अपना स्लॉट बुक करें",
@@ -103,7 +126,30 @@ TRANSLATIONS = {
         "of_label": "में से",
         "in_service": "सेवा में",
         "no_active_booking": "कोई सक्रिय बुकिंग नहीं। अपनी कतार की स्थिति देखने के लिए एक स्लॉट बुक करें।",
-        "booking_success": "बुकिंग की पुष्टि हुई!"
+        "booking_success": "बुकिंग की पुष्टि हुई!",
+        "live_queue": "लाइव कतार",
+        "slots_nav": "स्लॉट",
+        "add_slot": "नया स्लॉट जोड़ें",
+        "awaiting_checkin": "आज की बुकिंग — चेक-इन की प्रतीक्षा में",
+        "live_queue_heading": "लाइव कतार — काउंटर {counter}",
+        "manage_slots": "स्लॉट प्रबंधित करें",
+        "col_date": "तारीख",
+        "col_time": "समय",
+        "col_booked": "बुक किया गया",
+        "no_upcoming_slots": "इस काउंटर के लिए कोई आगामी स्लॉट नहीं है।",
+        "col_farmer": "किसान",
+        "col_produce": "उपज",
+        "col_slot": "स्लॉट",
+        "col_status": "स्थिति",
+        "col_actions": "कार्रवाई",
+        "no_one_waiting": "अभी कतार में कोई नहीं है।",
+        "check_in_btn": "चेक इन करें",
+        "counter_label": "केंद्र",
+        "date_label": "तारीख",
+        "start_time_label": "प्रारंभ समय",
+        "end_time_label": "समाप्ति समय",
+        "capacity_label": "क्षमता",
+        "add_slot_btn": "स्लॉट जोड़ें",
     },
 }
 
@@ -362,27 +408,39 @@ def officer_scan(request: Request, token: str):
 
 
 @router.get("/officer", response_class=HTMLResponse)
-def officer_page(request: Request, counter_id: int = 1):
-    user, redirect = require_page_user(request, "officer", with_name=True)
-    if redirect:
-        return redirect
+def officer_page(request: Request, counter_id: int = 1, lang: str | None = None):
+    user = get_current_user_from_cookie(request)
+    if user is None or user["role"] != "officer":
+        return RedirectResponse("/login")
+    full_user = get_user_by_id(int(user["sub"]))
+    user["full_name"] = full_user["full_name"] if full_user else None
     queue = get_live_queue(counter_id)
     counters = list_counters()
     pending = get_bookings_for_counter(counter_id)
-    return templates.TemplateResponse(
+    slots = list_upcoming_slots(counter_id=counter_id)
+
+    current_lang = lang or get_lang(request)
+    t = TRANSLATIONS[current_lang]
+
+    response = templates.TemplateResponse(
         request, "officer.html",
-        {"user": user, "queue": queue, "counter_id": counter_id, "counters": counters, "pending": pending, "active_page": "queue"},
+        {
+            "user": user, "queue": queue, "counter_id": counter_id,
+            "counters": counters, "pending": pending, "slots": slots,
+            "active_page": "queue", "lang": current_lang, "t": t,
+        },
     )
+    if lang:
+        response.set_cookie("lang", lang, max_age=31536000)
+    return response
 
 
 @router.get("/officer/queue-partial", response_class=HTMLResponse)
 def officer_queue_partial(request: Request, counter_id: int = 1):
-    user, redirect = require_page_user(request, "officer")
-    if redirect:
-        return redirect
     queue = get_live_queue(counter_id)
+    t = TRANSLATIONS[get_lang(request)]
     return templates.TemplateResponse(
-        request, "partials/queue_table.html", {"queue": queue}
+        request, "partials/queue_table.html", {"queue": queue, "t": t}
     )
 
 

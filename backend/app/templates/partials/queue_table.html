@@ -1,10 +1,10 @@
 <table>
     <tr>
-        <th>Farmer</th>
-        <th>Produce</th>
-        <th>Slot</th>
-        <th>Status</th>
-        <th>Actions</th>
+        <th>{{ t.col_farmer if t else "Farmer" }}</th>
+        <th>{{ t.col_produce if t else "Produce" }}</th>
+        <th>{{ t.col_slot if t else "Slot" }}</th>
+        <th>{{ t.col_status if t else "Status" }}</th>
+        <th>{{ t.col_actions if t else "Actions" }}</th>
     </tr>
     {% for row in queue %}
     <tr>
@@ -24,7 +24,7 @@
     </tr>
     {% else %}
     <tr>
-        <td colspan="5">No one in queue right now.</td>
+        <td colspan="5">{{ t.no_one_waiting if t else "No one in queue right now." }}</td>
     </tr>
     {% endfor %}
 </table>

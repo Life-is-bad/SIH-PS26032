@@ -30,9 +30,7 @@
                 "Live queue" }}</a>
             {% else %}
             <a href="/officer?counter_id={{ counter_id or 1 }}"
-                class="{{ 'current' if active_page == 'queue' else '' }}">Live queue</a>
-            <a href="/officer?counter_id={{ counter_id or 1 }}"
-                class="{{ 'current' if active_page == 'slots' else '' }}">Slots</a>
+                class="{{ 'current' if active_page == 'queue' else '' }}">{{ t.live_queue if t else "Live queue" }}</a>
             {% endif %}
         </div>
 

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Officer console — Agri-Queue{% endblock %}
 {% block content %}
-<h1>Live queue — Counter {{ counter_id }}</h1>
+<h1>{{ (t.live_queue_heading if t else "Live queue — Counter {counter}").format(counter=counter_id) }}</h1>
 
-<div class="section-title">Add a new slot</div>
+<div id="add-slot-section" class="section-title">{{ t.add_slot if t else "Add a new slot" }}</div>
 <form method="post" action="/officer/slots/new"
     style="display:flex;gap:10px;align-items:end;margin-bottom:30px;flex-wrap:wrap;">
     <div class="field" style="margin:0;">
-        <label>Counter</label>
+        <label>{{ t.counter_label if t else "Counter" }}</label>
         <select name="counter_id" required>
             {% for c in counters %}
             <option value="{{ c.counter_id }}">{{ c.counter_name }}</option>
@@ -15,25 +15,26 @@
         </select>
     </div>
     <div class="field" style="margin:0;">
-        <label>Date</label>
+        <label>{{ t.date_label if t else "Date" }}</label>
         <input type="date" name="slot_date" required>
     </div>
     <div class="field" style="margin:0;">
-        <label>Start time</label>
+        <label>{{ t.start_time_label if t else "Start time" }}</label>
         <input type="time" name="start_time" required>
     </div>
     <div class="field" style="margin:0;">
-        <label>End time</label>
+        <label>{{ t.end_time_label if t else "End time" }}</label>
         <input type="time" name="end_time" required>
     </div>
     <div class="field" style="margin:0;">
-        <label>Capacity</label>
+        <label>{{ t.capacity_label if t else "Capacity" }}</label>
         <input type="number" name="capacity" min="1" value="20" required>
     </div>
-    <button class="btn btn-outline" type="submit" style="width:auto;padding:10px 18px;">Add slot</button>
+    <button class="btn btn-outline" type="submit" style="width:auto;padding:10px 18px;">{{ t.add_slot_btn if t else "Add
+        slot" }}</button>
 </form>
 
-<div class="section-title">Manage slots</div>
+<div class="section-title">{{ t.manage_slots if t else "Manage slots" }}</div>
 {% include "partials/slot_manage_list.html" %}
 
 <div id="officer-panels">

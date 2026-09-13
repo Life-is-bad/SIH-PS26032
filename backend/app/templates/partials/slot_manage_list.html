@@ -4,24 +4,19 @@
     {% endif %}
     <table>
         <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Booked</th>
-            <th></th>
+            <th>{{ t.col_date if t else "Date" }}</th>
+            <th>{{ t.col_time if t else "Time" }}</th>
+            <th>{{ t.col_booked if t else "Booked" }}</th>
         </tr>
-        {% for s in slots %}
+        {% for slot in slots %}
         <tr>
-            <td>{{ s.slot_date }}</td>
-            <td class="mono">{{ s.start_time }} - {{ s.end_time }}</td>
-            <td>{{ s.booked_count }} / {{ s.capacity }}</td>
-            <td>
-                <button class="action-btn" hx-delete="/officer/slots/{{ s.slot_id }}?counter_id={{ counter_id }}"
-                    hx-target="#slot-manage-list" hx-swap="outerHTML" hx-confirm="Delete this slot?">Delete</button>
-            </td>
+            <td class="mono">{{ slot.slot_date }}</td>
+            <td class="mono">{{ slot.start_time }} - {{ slot.end_time }}</td>
+            <td>{{ slot.booked_count }} / {{ slot.capacity }}</td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="4">No upcoming slots for this counter.</td>
+            <td colspan="3">{{ t.no_upcoming_slots if t else "No upcoming slots for this counter." }}</td>
         </tr>
         {% endfor %}
     </table>

@@ -1,8 +1,8 @@
 <table>
     <tr>
-        <th>Farmer</th>
-        <th>Produce</th>
-        <th>Slot</th>
+        <th>{{ t.col_farmer if t else "Farmer" }}</th>
+        <th>{{ t.col_produce if t else "Produce" }}</th>
+        <th>{{ t.col_slot if t else "Slot" }}</th>
         <th></th>
     </tr>
     {% for b in pending %}
@@ -12,7 +12,7 @@
         <td class="mono">{{ b.start_time }}</td>
         <td>
             <button class="action-btn" hx-post="/officer/checkin/{{ b.booking_id }}" hx-target="#officer-panels"
-                hx-swap="innerHTML">Check in</button>
+                hx-swap="innerHTML">{{ t.check_in_btn if t else "Check in" }}</button>
         </td>
     </tr>
     {% else %}

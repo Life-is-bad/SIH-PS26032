@@ -917,3 +917,19 @@ main {
         transition: none !important;
     }
 }
+
+:target {
+    animation: flash-highlight 1.5s ease-out;
+}
+
+@keyframes flash-highlight {
+    0% {
+        background: var(--marigold-tint);
+        box-shadow: 0 0 0 8px var(--marigold-tint);
+    }
+
+    100% {
+        background: transparent;
+        box-shadow: none;
+    }
+}
