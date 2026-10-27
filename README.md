@@ -1,4 +1,4 @@
-# AgriQueue — SIH PS26032
+# AgriQueue — PS26032
 
 **Farmer Slot Booking & Queue Management System**
 Smart India Hackathon — Problem Statement 26032
